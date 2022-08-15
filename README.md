@@ -12,7 +12,9 @@ Simply configure your VSCode settings JSON file to look something like this:
       "splitTerminals": [
         {
           "name": "server",
-          "commands": ["npm i", "npm run dev"]
+          "commands": ["npm i", "npm run dev"],
+          "color": "blue",
+          "icon": "accounts-view-bar-icon"
         },
         {
           "name": "client",
@@ -40,6 +42,19 @@ Simply configure your VSCode settings JSON file to look something like this:
     }
   ]
 ```
+
+The list of colors supported are:
+
+- black
+- red
+- green
+- yellow
+- blue
+- magenta
+- cyan
+- white
+
+The list of icons supported can be found in the [vscode docs](https://code.visualstudio.com/api/references/icons-in-labels#icon-listing). Both the 'identifier' and 'default codicon ID' will work.
 
 The outer array represents a integrated VSCode terminal window, and the `splitTerminals` array contains the information about how each terminal window should be split up.
 

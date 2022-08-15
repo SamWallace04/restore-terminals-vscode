@@ -1,6 +1,8 @@
 export interface TerminalConfig {
   commands?: string[];
   name?: string;
+  color?: keyof typeof TerminalColor;
+  icon?: string;
   shouldRunCommands?: boolean; //whether to actually run the commands, or just paste them in
 }
 
@@ -21,4 +23,15 @@ export interface JsonConfiguration {
   artificialDelayMilliseconds?: number;
   terminals?: TerminalWindow[]; //uses same type for now
   runOnStartup?: boolean;
+}
+
+export enum TerminalColor {
+  'black' = 'terminal.ansiBlack',
+  'red' = 'terminal.ansiRed',
+  'green' = 'terminal.ansiGreen',
+  'yellow' = 'terminal.ansiYellow',
+  'blue' = 'terminal.ansiBlue',
+  'magenta' = 'terminal.ansiMagenta',
+  'cyan' = 'terminal.ansiCyan',
+  'white' = 'terminal.ansiWhite'
 }

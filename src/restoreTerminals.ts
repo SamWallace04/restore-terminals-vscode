@@ -1,17 +1,17 @@
-import * as vscode from "vscode";
-import { delay } from "./utils";
-import { Configuration, TerminalConfig, TerminalWindow } from "./model";
+import * as vscode from 'vscode';
+import { delay } from './utils';
+import { Configuration, TerminalColor } from './model';
 
 const DEFAULT_ARTIFICAL_DELAY = 300;
 const SPLIT_TERM_CHECK_DELAY = 100;
 const MAX_TERM_CHECK_ATTEMPTS = 500; //this times SPLIT_TERM_CHECK_DELAY is the timeout
 
 export default async function restoreTerminals(configuration: Configuration) {
-  console.log("restoring terminals", configuration);
+  console.log('restoring terminals', configuration);
   const {
     keepExistingTerminalsOpen,
     artificialDelayMilliseconds,
-    terminalWindows,
+    terminalWindows
   } = configuration;
 
   if (!terminalWindows) {
@@ -44,10 +44,10 @@ export default async function restoreTerminals(configuration: Configuration) {
     const name = terminalWindow.splitTerminals[0]?.name;
     if (terminalWindow.profile) {
       const profileTerm = await vscode.commands.executeCommand(
-        "workbench.action.terminal.newWithProfile",
+        'workbench.action.terminal.newWithProfile',
         {
           name: name,
-          profileName: terminalWindow.profile,
+          profileName: terminalWindow.profile
         }
       );
       if (profileTerm != undefined) {
@@ -56,16 +56,31 @@ export default async function restoreTerminals(configuration: Configuration) {
 
       if (name) {
         await vscode.commands.executeCommand(
-          "workbench.action.terminal.renameWithArg",
+          'workbench.action.terminal.renameWithArg',
           {
-            name,
+            name
           }
         );
       }
     } else {
+      let color: vscode.ThemeColor | undefined;
+
+      if (terminalWindow.splitTerminals[0]?.color) {
+        color = new vscode.ThemeColor(
+          TerminalColor[terminalWindow.splitTerminals[0].color]
+        );
+      }
+
+      let icon: vscode.ThemeIcon | undefined;
+
+      if (terminalWindow.splitTerminals[0]?.icon) {
+        icon = new vscode.ThemeIcon(terminalWindow.splitTerminals[0].icon);
+      }
+
       term = vscode.window.createTerminal({
         name: name,
-        //  cwd: vscode.window.activeTextEditor?.document.uri.fsPath, //i think this happens by default
+        color: color,
+        iconPath: icon
       });
       term.show();
     }
@@ -78,7 +93,7 @@ export default async function restoreTerminals(configuration: Configuration) {
         commandsToRunInTerms.push({
           commands,
           shouldRunCommands: shouldRunCommands ?? true,
-          terminal: term,
+          terminal: term
         });
     }
     for (let i = 1; i < terminalWindow.splitTerminals.length; i++) {
@@ -89,7 +104,7 @@ export default async function restoreTerminals(configuration: Configuration) {
         commandsToRunInTerms.push({
           commands,
           shouldRunCommands: shouldRunCommands ?? true,
-          terminal: createdSplitTerm,
+          terminal: createdSplitTerm
         });
     }
   }
@@ -106,7 +121,7 @@ async function runCommands(
   shouldRunCommands = true
 ) {
   for (let j = 0; j < commands?.length; j++) {
-    const command = commands[j] + (shouldRunCommands ? "" : ";"); //add semicolon so all commands can run properly after user presses enter
+    const command = commands[j] + (shouldRunCommands ? '' : ';'); //add semicolon so all commands can run properly after user presses enter
     terminal.sendText(command, shouldRunCommands);
   }
 }
@@ -115,12 +130,12 @@ async function createNewSplitTerminal(
   name: string | undefined
 ): Promise<vscode.Terminal> {
   const numTermsBefore = vscode.window.terminals.length;
-  await vscode.commands.executeCommand("workbench.action.terminal.split");
+  await vscode.commands.executeCommand('workbench.action.terminal.split');
   if (name) {
     await vscode.commands.executeCommand(
-      "workbench.action.terminal.renameWithArg",
+      'workbench.action.terminal.renameWithArg',
       {
-        name,
+        name
       }
     );
   }
@@ -135,5 +150,5 @@ async function createNewSplitTerminal(
       attemptCount++;
     }
   }
-  throw new Error("Max attempts reached while creating new split terminal");
+  throw new Error('Max attempts reached while creating new split terminal');
 }
