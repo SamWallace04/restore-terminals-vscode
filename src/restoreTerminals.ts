@@ -28,7 +28,7 @@ export default async function restoreTerminals(configuration: Configuration) {
   }
   await delay(artificialDelayMilliseconds ?? DEFAULT_ARTIFICAL_DELAY); //without delay it starts bugging out
 
-  let commandsToRunInTerms: {
+  const commandsToRunInTerms: {
     commands: string[];
     shouldRunCommands: boolean;
     terminal: vscode.Terminal;
@@ -41,9 +41,9 @@ export default async function restoreTerminals(configuration: Configuration) {
     }
 
     let term!: vscode.Terminal;
-    let name = terminalWindow.splitTerminals[0]?.name;
+    const name = terminalWindow.splitTerminals[0]?.name;
     if (terminalWindow.profile) {
-      let profileTerm = await vscode.commands.executeCommand(
+      const profileTerm = await vscode.commands.executeCommand(
         "workbench.action.terminal.newWithProfile",
         {
           name: name,
@@ -103,7 +103,7 @@ export default async function restoreTerminals(configuration: Configuration) {
 async function runCommands(
   commands: string[],
   terminal: vscode.Terminal,
-  shouldRunCommands: boolean = true
+  shouldRunCommands = true
 ) {
   for (let j = 0; j < commands?.length; j++) {
     const command = commands[j] + (shouldRunCommands ? "" : ";"); //add semicolon so all commands can run properly after user presses enter
@@ -114,31 +114,26 @@ async function runCommands(
 async function createNewSplitTerminal(
   name: string | undefined
 ): Promise<vscode.Terminal> {
-  return new Promise(async (resolve, reject) => {
-    const numTermsBefore = vscode.window.terminals.length;
-    await vscode.commands.executeCommand("workbench.action.terminal.split");
-    if (name) {
-      await vscode.commands.executeCommand(
-        "workbench.action.terminal.renameWithArg",
-        {
-          name,
-        }
-      );
-    }
-    let attemptCount = 0;
-    while (true) {
-      const numTermsNow = vscode.window.terminals?.length;
-      if (attemptCount > MAX_TERM_CHECK_ATTEMPTS) {
-        reject();
-        break;
+  const numTermsBefore = vscode.window.terminals.length;
+  await vscode.commands.executeCommand("workbench.action.terminal.split");
+  if (name) {
+    await vscode.commands.executeCommand(
+      "workbench.action.terminal.renameWithArg",
+      {
+        name,
       }
-      if (numTermsNow > numTermsBefore) {
-        resolve(vscode.window.terminals[numTermsNow - 1]);
-        break; //we know the terminal has now been split
-      } else {
-        await delay(SPLIT_TERM_CHECK_DELAY);
-        attemptCount++;
-      }
+    );
+  }
+  let attemptCount = 0;
+  while (attemptCount > MAX_TERM_CHECK_ATTEMPTS) {
+    const numTermsNow = vscode.window.terminals?.length;
+    if (numTermsNow > numTermsBefore) {
+      return vscode.window.terminals[numTermsNow - 1];
+      break; //we know the terminal has now been split
+    } else {
+      await delay(SPLIT_TERM_CHECK_DELAY);
+      attemptCount++;
     }
-  });
+  }
+  throw new Error("Max attempts reached while creating new split terminal");
 }
